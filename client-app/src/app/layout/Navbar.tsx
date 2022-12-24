@@ -11,7 +11,8 @@ export default function Navbar(){
                     <img src="/assets/logo.png" alt="logo" style={{marginRight: '10px'}}/>
                     Reactivities
                 </MenuItem>
-                <MenuItem as={NavLink} to='/activities' name="activities"/>
+                <MenuItem as={NavLink} to='/activities' name="Activities"/>
+                <MenuItem as={NavLink} to='/errors' name="Errors"/>
                 <MenuItem>
                     <Button as={NavLink} to='/createactivity' positive content="Create Activity" />
                 </MenuItem>
