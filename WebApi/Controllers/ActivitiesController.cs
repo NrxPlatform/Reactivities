@@ -5,6 +5,7 @@ using Application.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebApi.Controllers;
 
