@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace WebApi.Controllers;
 
+[AllowAnonymous]
 public class ActivitiesController :BaseApiController 
 {
     

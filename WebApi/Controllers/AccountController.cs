@@ -40,7 +40,13 @@ public class AccountController : ControllerBase {
     [HttpPost("register")]
     public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto){
         if (await userManager.Users.AnyAsync(x => x.UserName == registerDto.Username)){
-            return BadRequest("User is already taken");
+            ModelState.AddModelError("username", "username already taken");
+            return ValidationProblem();
+        }
+
+         if (await userManager.Users.AnyAsync(x => x.Email == registerDto.Email)){
+            ModelState.AddModelError("email", "Email already taken");
+            return ValidationProblem();
         }
         var user = new AppUser{
             DisplayName = registerDto.DisplayName,
