@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace WebApi.Controllers;
 
-[AllowAnonymous]
+
 public class ActivitiesController :BaseApiController 
 {
     
@@ -27,6 +27,8 @@ public class ActivitiesController :BaseApiController
     public async Task<IActionResult> CreateActivity(Activity activity){
         return HandleResult(await Mediator.Send(new Create.Command {Activity = activity}));
     }
+
+    [Authorize(Policy = "IsActivityHost")]
     [HttpPut("{id}")]
     public async Task<IActionResult> EditActivity(Guid id, Activity activity){
         activity.Id = id;
@@ -38,6 +40,10 @@ public class ActivitiesController :BaseApiController
         return HandleResult(await Mediator.Send(new Delete.Command {Id = id}));
     }
     
+    [HttpPost("{id}/attend")]
+    public async Task<IActionResult> Attend(Guid id){
+        return HandleResult(await Mediator.Send(new UpdateAttendance.Command{Id = id}));
+    }
 
 
 }
