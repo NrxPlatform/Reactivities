@@ -1,4 +1,3 @@
-import { error } from "console";
 import { ErrorMessage, Form, Formik } from "formik";
 import { Button, Header, Label } from "semantic-ui-react";
 import MyTextInput from "../../app/common/form/MyTextInput";

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Message, MessageItem, MessageList } from "semantic-ui-react";
 
 interface Props {
