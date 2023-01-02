@@ -13,5 +13,5 @@ public record ActivityDto{
     public string? Venue {get; init;}
     public string? HostUserName {get; init;}
     public bool IsCancelled {get; set;}
-    public ICollection<Profile> Attendees {get; init;} = new List<Profile>();
+    public ICollection<AttendeeDto> Attendees {get; init;} = new List<AttendeeDto>();
 }

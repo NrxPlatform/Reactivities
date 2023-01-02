@@ -24,7 +24,8 @@ public class AccountController : ControllerBase {
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto){
-        var user = await userManager.FindByEmailAsync(loginDto.Email);
+        var user = await userManager.Users.Include(x => x.Photos)
+            .FirstOrDefaultAsync(x => x.Email == loginDto.Email);
 
         if (user == null) return Unauthorized();
 
@@ -64,17 +65,18 @@ public class AccountController : ControllerBase {
     [Authorize]
     [HttpGet]
     public async Task<ActionResult<UserDto>> GetCurrentUser(){
-        var user = await userManager.FindByEmailAsync(User.FindFirstValue(ClaimTypes.Email));
-        return CreateUserObject(user);
+        var user = await userManager.Users.Include(x => x.Photos)
+            .FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
+        return CreateUserObject(user!);
     }
 
     private ActionResult<UserDto> CreateUserObject(AppUser user){
         return new UserDto
         {
             DisplayName = user.DisplayName,
-            Image = null,
-            Token = tokenService.CreateToken(user),
-            Username = user.UserName
+            Image = user?.Photos?.FirstOrDefault(x => x.IsMain)?.Url,
+            Token = tokenService.CreateToken(user!),
+            Username = user?.UserName
         };
     }
 }
