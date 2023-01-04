@@ -5,6 +5,7 @@ using Application.Core;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using Application.Interfaces;
 
 namespace Application.Activities;
 
@@ -16,10 +17,11 @@ public class Details{
     public class Handler : IRequestHandler<Query, Result<ActivityDto>>{
         private readonly DataContext _context;
         private readonly IMapper mapper;
-
+        
         public Handler(DataContext context, IMapper mapper){
             _context = context;
             this.mapper = mapper;
+            
         }
         public async Task<Result<ActivityDto>> Handle(Query request, CancellationToken cancellationToken){
             var activity = await _context.Activities!
