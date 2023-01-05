@@ -1,8 +1,10 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { toast } from "react-toastify";
 import { Activity, ActivityFormValues } from "../models/activity";
+import { PaginatedResult } from "../models/pagination";
 import { Profile } from "../models/profile";
 import { User, UserFormValues } from "../models/user";
+import { UserActivity } from "../models/userActivity";
 import { router } from "../router/Routes";
 import { store } from "../stores/store";
 
@@ -23,6 +25,11 @@ axios.interceptors.request.use(config => {
 
 axios.interceptors.response.use(async response => {
     await sleep(1000);
+    const pagination = response.headers["pagination"];
+    if (pagination){
+        response.data = new PaginatedResult(response.data, JSON.parse(pagination));
+        return response as AxiosResponse<PaginatedResult<any>>;
+    }
     return response; 
 }, (error: AxiosError) => {
         const {data, status, config} = error.response as AxiosResponse;
@@ -65,14 +72,14 @@ axios.interceptors.response.use(async response => {
 
 
 const request = {
-    get : <T>(url : string) => axios.get<T>(url).then(responseBody),
+    get : <T>(url : string, params? : URLSearchParams) => axios.get<T>(url, params && {params}).then(responseBody),
     post : <T>(url : string, body: {}) => axios.post<T>(url, body).then(responseBody),
     put : <T>(url : string, body: {}) => axios.put<T>(url, body).then(responseBody),
     delete : <T>(url : string) => axios.delete<T>(url).then(responseBody)
 }
 
 const Activities = {
-    list : () => request.get<Activity[]>('/activities'),
+    list : (params: URLSearchParams) => request.get<PaginatedResult<Activity[]>>('/activities', params),
     details : (id : string) => request.get<Activity>(`/activities/${id}`),
     create: (activity: ActivityFormValues) => request.post<void>('/activities', activity),
     update: (activity: ActivityFormValues) => request.put<void>(`/activities/${activity.id}`, activity),
@@ -100,7 +107,10 @@ const Profiles = {
     updateProfile: (profile: Partial<Profile>) => request.put('/profiles', profile),
     updateFollowing: (username: string) => request.post(`/follow/${username}`, {}),
     listFollowings: (username: string, predicate: string) =>
-        request.get<Profile[]>(`/follow/${username}?predicate=${predicate}`)
+        request.get<Profile[]>(`/follow/${username}?predicate=${predicate}`),
+    listActivities: (username: string, predicate: string) => 
+        request.get<UserActivity[]>(`/profiles/${username}/activities?predicate=${predicate}`)
+    
 }
 
 const agent = {

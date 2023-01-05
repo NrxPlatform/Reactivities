@@ -23,7 +23,7 @@ export default function ActivityListItem({activity}: Props){
                 <Item>
                     <ItemImage size="tiny" circular src={activity.host?.image || '/assets/user.png'} />
                     <ItemContent>
-                        <ItemHeader as={Link} to={`/activites/${activity.id}`}>
+                        <ItemHeader as={Link} to={`/activities/${activity.id}`}>
                             {activity.title}
                         </ItemHeader>
                         <ItemDescription>Hosted by <Link to={`/profiles/${activity.hostUserName}`}>{activity.host?.displayName}</Link></ItemDescription>

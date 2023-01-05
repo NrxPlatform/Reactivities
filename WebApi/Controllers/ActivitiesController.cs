@@ -14,8 +14,8 @@ public class ActivitiesController :BaseApiController
 {
     
     [HttpGet]
-    public async Task<IActionResult> GetActivities(){
-        return HandleResult(await Mediator.Send(new List.Query()));
+    public async Task<IActionResult> GetActivities([FromQuery]ActivityParams parameters){
+        return HandlePageResult(await Mediator.Send(new List.Query{Params = parameters}));
     }
 
     [HttpGet("{id}")]
