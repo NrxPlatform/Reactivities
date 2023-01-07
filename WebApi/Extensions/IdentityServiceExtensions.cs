@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Infrastructure.Security;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace WebApi.Extensions;
 
@@ -15,7 +16,8 @@ public static class IdentityServiceExtensions{
         services.AddIdentityCore<AppUser>(opt => {
             opt.Password.RequireNonAlphanumeric = false;
             opt.User.RequireUniqueEmail = true;
-        }).AddEntityFrameworkStores<DataContext>();
+        }).AddEntityFrameworkStores<DataContext>()
+        .AddSignInManager<SignInManager<AppUser>>();
         
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"])); 
 
@@ -25,7 +27,9 @@ public static class IdentityServiceExtensions{
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = key,
                     ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero,
                 };
                 opt.Events =  new JwtBearerEvents{
                     OnMessageReceived = context => {

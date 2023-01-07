@@ -14,7 +14,8 @@ const sleep = (delay: number) => {
     })
 }
 
-axios.defaults.baseURL = 'http://localhost:5000/api';
+axios.defaults.baseURL = process.env.REACT_APP_API_URL;
+
 const responseBody = <T> (response: AxiosResponse<T>) => response.data;
 
 axios.interceptors.request.use(config => {
@@ -24,7 +25,7 @@ axios.interceptors.request.use(config => {
 })
 
 axios.interceptors.response.use(async response => {
-    await sleep(1000);
+    if(process.env.NODE_ENV === 'development') await sleep(1000);
     const pagination = response.headers["pagination"];
     if (pagination){
         response.data = new PaginatedResult(response.data, JSON.parse(pagination));
@@ -32,7 +33,7 @@ axios.interceptors.response.use(async response => {
     }
     return response; 
 }, (error: AxiosError) => {
-        const {data, status, config} = error.response as AxiosResponse;
+        const {data, status, config, headers} = error.response as AxiosResponse;
         switch(status){
             case 400:
                 if(config.method === 'get' && data.errors.hasOwnProperty('id')){
@@ -51,6 +52,10 @@ axios.interceptors.response.use(async response => {
                 }
                 break;
             case 401:
+                if (status === 401 && headers['www-authenticate']?.startsWith('Bearer error="invalid_token"')){
+                    store.userStore.logout();
+                    toast.error('Session expired - please login again')
+                }
                 toast.error('unauthorized');
                 break;
             case 403:
@@ -90,7 +95,8 @@ const Activities = {
 const Account = {
     current : () => request.get<User>('/account'),
     login: (user: UserFormValues) => request.post<User>('/account/login', user),
-    register: (user: UserFormValues) => request.post<User>('/account/register', user)
+    register: (user: UserFormValues) => request.post<User>('/account/register', user),
+    refreshToken: () => request.post<User>('/account/refreshToken', {})
 }
 
 const Profiles = {

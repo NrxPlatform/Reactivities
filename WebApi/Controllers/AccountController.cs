@@ -31,6 +31,7 @@ public class AccountController : ControllerBase {
 
         var result = await userManager.CheckPasswordAsync(user, loginDto.Password);
         if (result){
+           await SetRefreshToken(user!);
            return CreateUserObject(user);
         }
 
@@ -57,6 +58,7 @@ public class AccountController : ControllerBase {
 
         var result = await userManager.CreateAsync(user, registerDto.Password);
         if (result.Succeeded){
+            await SetRefreshToken(user!);
             return CreateUserObject(user);
         }
         return BadRequest(result.Errors);
@@ -67,7 +69,45 @@ public class AccountController : ControllerBase {
     public async Task<ActionResult<UserDto>> GetCurrentUser(){
         var user = await userManager.Users.Include(x => x.Photos)
             .FirstOrDefaultAsync(x => x.Email == User.FindFirstValue(ClaimTypes.Email));
+        await SetRefreshToken(user!);
         return CreateUserObject(user!);
+    }
+
+    [HttpPost("refreshToken")]
+    public async Task<ActionResult<UserDto>> RefreshToken(){
+
+         var refreshToken = Request.Cookies["refreshToken"];
+
+        var user = await userManager.Users
+            .Include(r => r.RefreshTokens)
+            .Include(p => p.Photos)
+            .FirstOrDefaultAsync(x => x.UserName == User.FindFirstValue(ClaimTypes.Name));
+
+        if (user == null) return Unauthorized();
+
+        var oldToken = user.RefreshTokens.SingleOrDefault(x => x.Token == refreshToken);
+
+        if (oldToken != null && !oldToken.IsActive) return Unauthorized();
+
+        if (oldToken != null) oldToken.Revoked = DateTime.UtcNow;
+
+        return CreateUserObject(user!);
+    }
+
+    private async Task SetRefreshToken(AppUser user)
+    {
+            var refreshToken = tokenService.GenerateRefreshToken();
+
+            user.RefreshTokens.Add(refreshToken);
+            await userManager.UpdateAsync(user);
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Expires = DateTime.UtcNow.AddDays(7)
+            };
+
+            Response.Cookies.Append("refreshToken", refreshToken.Token!, cookieOptions);
     }
 
     private ActionResult<UserDto> CreateUserObject(AppUser user){
